@@ -4,6 +4,12 @@ export type PhotoSection = {
   subtitle?: string;
   photos: string[];
 };
+
+export type NearbyLandmark = {
+  name: string;
+  distance: number;
+};
+
 export type Listing = {
   id: string;
   title: string;
@@ -17,16 +23,24 @@ export type Listing = {
   photos: string[];
   amenities: string[];
   houseRules: string[];
-  nearLandmarks: string[];
+  nearLandmarks: NearbyLandmark[];
   availability: "available" | "reserved" | "occupied";
   landlordId: string;
   createdAt: string;
   totalUnits: number;
   availableUnits: number;
   photoSections?: PhotoSection[];
+  roomMaterials: string[] | null;
+  inclusions: string[] | null;
+  others: string[] | null;
+  roomSpecifications?: RoomSpecification;
 };
 
-
+export type RoomSpecification = {
+  capacity: number;
+  floorArea: number;
+  roomSize: string;
+};
 
 export const MOCK_LISTINGS: Listing[] = [
   {
@@ -42,13 +56,24 @@ export const MOCK_LISTINGS: Listing[] = [
     photos: ["https://picsum.photos/seed/rp1/400/500"],
     amenities: ["Wi-Fi", "Water", "Electricity"],
     houseRules: ["No smoking", "No pets"],
-    nearLandmarks: ["Cannery Site"],
+    nearLandmarks: [
+      { name: "Notre Dame-Siena", distance: 0.2 },
+      { name: "Poblacion", distance: 0.6 },
+    ],
     availability: "available",
     landlordId: "l1",
     // landlordVerified: true,
     createdAt: "2026-06-01",
     totalUnits: 10,
     availableUnits: 5,
+    roomMaterials: ["Concrete walls", "Tile flooring", "Metal bed frames"],
+    inclusions: ["Water", "Electricity", "Wi-Fi"],
+    others: ["CCTV surveillance", "Gates"],
+    roomSpecifications: {
+      capacity: 1,
+      floorArea: 12,
+      roomSize: "3m x 4m",
+    },
   },
   {
     id: "2",
@@ -63,13 +88,19 @@ export const MOCK_LISTINGS: Listing[] = [
     photos: ["https://picsum.photos/seed/rp2/400/500"],
     amenities: ["Wi-Fi", "Kitchen", "Laundry"],
     houseRules: ["Curfew 10pm"],
-    nearLandmarks: ["Notre Dame-Siena", "Poblacion"],
+    nearLandmarks: [
+      { name: "Notre Dame-Siena", distance: 0.1 },
+      { name: "Public Market", distance: 0.5 },
+    ],
     availability: "available",
     landlordId: "l2",
     // landlordVerified: true,
     createdAt: "2026-06-05",
     totalUnits: 8,
     availableUnits: 3,
+    roomMaterials: ["Wooden walls", "Tile flooring", "Metal bed frames"],
+    inclusions: ["Water", "Electricity", "Wi-Fi"],
+    others: null,
   },
   {
     id: "3",
@@ -84,14 +115,16 @@ export const MOCK_LISTINGS: Listing[] = [
     photos: ["https://picsum.photos/seed/rp3/400/500"],
     amenities: ["Wi-Fi", "Aircon", "Private CR"],
     houseRules: ["No overnight guests"],
-    nearLandmarks: ["Public Market", "Poblacion"],
+    nearLandmarks: [
+      { name: "Public Market", distance: 0.2 },
+      { name: "Notre Dame-Siena", distance: 0.4 },
+    ],
     availability: "available",
     landlordId: "l1",
     // landlordVerified: true,
     createdAt: "2026-06-10",
     totalUnits: 5,
     availableUnits: 2,
-
     photoSections: [
       {
         id: "living",
@@ -141,6 +174,9 @@ export const MOCK_LISTINGS: Listing[] = [
         ],
       },
     ],
+    roomMaterials: ["Concrete walls", "Tile flooring", "Metal bed frames"],
+    inclusions: ["Water", "Electricity", "Wi-Fi"],
+    others: null,
   },
   {
     id: "4",
@@ -155,13 +191,19 @@ export const MOCK_LISTINGS: Listing[] = [
     photos: ["https://picsum.photos/seed/rp4/400/500"],
     amenities: ["Wi-Fi", "Aircon", "Kitchen", "Parking"],
     houseRules: ["No loud parties"],
-    nearLandmarks: ["Cannery Site"],
+    nearLandmarks: [
+      { name: "Cannery Site", distance: 0.1 },
+      { name: "Notre Dame-Siena", distance: 0.4 },
+    ],
     availability: "available",
     landlordId: "l3",
     // landlordVerified: false,
     createdAt: "2026-06-15",
     totalUnits: 3,
     availableUnits: 1,
+    roomMaterials: ["Concrete walls", "Tile flooring", "Metal bed frames"],
+    inclusions: ["Water", "Electricity", "Wi-Fi"],
+    others: ["CCTV surveillance", "Gates"],
   },
   {
     id: "5",
@@ -176,13 +218,19 @@ export const MOCK_LISTINGS: Listing[] = [
     photos: ["https://picsum.photos/seed/rp5/400/500"],
     amenities: ["Wi-Fi", "Water"],
     houseRules: ["Girls only"],
-    nearLandmarks: ["Notre Dame-Siena"],
+    nearLandmarks: [
+      { name: "Notre Dame-Siena", distance: 0.1 },
+      { name: "Poblacion", distance: 0.6 },
+    ],
     availability: "available",
     landlordId: "l2",
     // landlordVerified: true,
     createdAt: "2026-06-20",
     totalUnits: 12,
     availableUnits: 6,
+    roomMaterials: ["Wooden walls", "Tile flooring", "Metal bed frames"],
+    inclusions: ["Water", "Electricity", "Wi-Fi"],
+    others: null,
   },
   {
     id: "6",
@@ -197,12 +245,18 @@ export const MOCK_LISTINGS: Listing[] = [
     photos: ["https://picsum.photos/seed/rp6/400/500"],
     amenities: ["Wi-Fi", "Meals", "Laundry"],
     houseRules: ["No smoking"],
-    nearLandmarks: ["Cannery Site"],
+    nearLandmarks: [
+      { name: "Cannery Site", distance: 0.1 },
+      { name: "Notre Dame-Siena", distance: 0.4 },
+    ],
     availability: "available",
     landlordId: "l1",
     // landlordVerified: true,
     createdAt: "2026-06-25",
     totalUnits: 6,
     availableUnits: 2,
+    roomMaterials: ["Concrete walls", "Tile flooring", "Metal bed frames"],
+    inclusions: ["Water", "Electricity", "Wi-Fi"],
+    others: ["CCTV surveillance", "Gates"],
   },
 ];

@@ -1,12 +1,22 @@
 import { Search, MapPin } from "lucide-react";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-export default function SearchPill() {
+type Props = {
+  hideNearMe?: boolean;
+};
+
+export default function SearchPill({ hideNearMe }: Props) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [query, setQuery] = useState("");
+
+  // Auto-hide "Find rentals near me" kung nasa /nearMe or /search na
+  const isOnResultsPage =
+    location.pathname === "/nearMe" || location.pathname === "/search";
+  const shouldHideNearMe = hideNearMe ?? isOnResultsPage;
 
   const handleSearch = () => {
     const trimmed = query.trim();
@@ -19,17 +29,18 @@ export default function SearchPill() {
 
   const handleNearMe = () => {
     if (!navigator.geolocation) {
-      navigate("/search");
+      navigate("/nearMe");
       return;
     }
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const { latitude, longitude } = pos.coords;
-        navigate(`/search?lat=${latitude}&lng=${longitude}&nearMe=1`);
+        navigate(`/nearMe?lat=${latitude}&lng=${longitude}&nearMe=1`);
       },
       () => {
-        navigate("/search");
-      }
+        navigate("/nearMe");
+      },
+      { timeout: 5000, maximumAge: 60000 }
     );
   };
 
@@ -53,14 +64,16 @@ export default function SearchPill() {
         </Button>
       </div>
 
-      <Button
-        onClick={handleNearMe}
-        variant="outline"
-        className="h-11 w-full gap-2 rounded-full border-2 border-green-500 bg-green-50 text-sm font-semibold text-green-700 hover:bg-green-100"
-      >
-        <MapPin className="h-4 w-4" strokeWidth={2.5} />
-        Find rentals near me
-      </Button>
+      {!shouldHideNearMe && (
+        <Button
+          onClick={handleNearMe}
+          variant="outline"
+          className="h-11 w-full gap-2 rounded-full border-2 border-green-500 bg-green-50 text-sm font-semibold text-green-700 hover:bg-green-100"
+        >
+          <MapPin className="h-4 w-4" strokeWidth={2.5} />
+          Find rentals near me
+        </Button>
+      )}
     </div>
   );
 }

@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   BadgeCheck,
-  MapPin,
+  //   MapPin,
   Info,
   BedDouble,
   Phone,
@@ -13,10 +13,16 @@ import {
   ShieldCheck,
   Navigation,
   ExternalLink,
-  BarChart3,
-  TrendingDown,
-  TrendingUp,
+  //   BarChart3,
+  //   TrendingDown,
+  //   TrendingUp,
+  PersonStanding,
+  Bike,
+  Car,
   MessageCircle,
+  Users,
+  Ruler,
+  Maximize2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -31,6 +37,13 @@ import { MOCK_LANDLORDS } from "@/mocks/landlords";
 import { getUnitLabel } from "@/lib/unitLabel";
 import { getLandmarkIcon } from "@/lib/landmarkIcons";
 import { defaultIcon } from "@/lib/leafletIcon";
+import {
+  formatDistance,
+  walkingTime,
+  motorcycleTime,
+  carTime,
+} from "@/lib/formatDistance";
+import PriceComparison from "@/components/rentals/priceComparison";
 
 const PROPERTY_TYPE_LABEL: Record<Listing["propertyType"], string> = {
   boarding_house: "Boarding house",
@@ -53,6 +66,11 @@ const AVAILABILITY_STYLES: Record<Listing["availability"], string> = {
   occupied: "bg-gray-200 text-gray-700",
 };
 
+// Reusable divider between major groups
+function GroupDivider() {
+  return <div className="border-border mt-10 border-t pt-8" />;
+}
+
 export default function ListingDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -67,27 +85,6 @@ export default function ListingDetails() {
     }, 300);
     return () => clearTimeout(t);
   }, [id]);
-
-  const comparison = useMemo(() => {
-    if (!listing) return null;
-    const sameType = MOCK_LISTINGS.filter(
-      (l) => l.propertyType === listing.propertyType && l.id !== listing.id,
-    );
-    if (sameType.length === 0) return null;
-
-    const avg =
-      sameType.reduce((sum, l) => sum + l.pricePerMonth, 0) / sameType.length;
-    const diff = listing.pricePerMonth - avg;
-    const pct = Math.round((Math.abs(diff) / avg) * 100);
-    const isBelow = diff < 0;
-
-    const similar = sameType.slice(0, 3).map((l) => ({
-      listing: l,
-      diff: l.pricePerMonth - listing.pricePerMonth,
-    }));
-
-    return { avg, diff, pct, isBelow, similar };
-  }, [listing]);
 
   if (loading) {
     return (
@@ -128,6 +125,7 @@ export default function ListingDetails() {
 
   return (
     <PageShell>
+      {/* Top bar */}
       <div className="sticky top-0 z-20 -mx-4 flex items-center justify-between bg-white/95 px-4 py-3 backdrop-blur">
         <button
           onClick={() => navigate(-1)}
@@ -135,14 +133,6 @@ export default function ListingDetails() {
         >
           <ArrowLeft className="h-5 w-5" />
         </button>
-        {/* <div className="flex gap-2">
-            <button className="rounded-full bg-white p-2 shadow-md hover:scale-105 active:scale-95">
-                <Share className="h-5 w-5" />
-            </button>
-            <button className="rounded-full bg-white p-2 shadow-md hover:scale-105 active:scale-95">
-                <Heart className="h-5 w-5" />
-            </button>
-            </div> */}
       </div>
 
       {/* Photo gallery */}
@@ -171,7 +161,7 @@ export default function ListingDetails() {
 
         <p className="mt-1 text-2xl font-bold text-green-700">
           {formatPeso(listing.pricePerMonth)}
-          <span>/month</span>
+          <span className="text-lg">/month</span>
         </p>
 
         <p className="text-muted-foreground mt-1 text-sm">
@@ -179,53 +169,10 @@ export default function ListingDetails() {
         </p>
       </section>
 
-      {/* KEY INFO */}
-      <div className="border-border mt-4 grid grid-cols-3 gap-4 rounded-xl border p-4">
-        <div>
-          <p className="text-muted-foreground text-sm">Deposit</p>
-          <p className="mt-1 text-base font-bold">
-            {formatPeso(listing.deposit)}
-          </p>
-        </div>
-        <div>
-          <p className="text-muted-foreground text-sm">Advance</p>
-          <p className="mt-1 text-base font-bold">
-            {formatPeso(listing.advancePayment)}
-          </p>
-        </div>
-        <div>
-          <p className="text-muted-foreground text-sm">{unitLabel} available</p>
-          <div className="mt-1 flex items-center gap-1.5">
-            <BedDouble className="h-4 w-4 text-green-600" />
-            <p className="text-base font-bold">{listing.availableUnits}</p>
-          </div>
-        </div>
-      </div>
+      {/* ==================== GROUP 1: ABOUT THE ROOM ==================== */}
 
-      {/* NEARBY LANDMARKS */}
-      {listing.nearLandmarks.length > 0 && (
-        <section className="mt-6">
-          <h2 className="text-base font-bold">Nearby landmarks</h2>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {listing.nearLandmarks.map((name) => {
-              const Icon = getLandmarkIcon(name);
-              return (
-                <div
-                  key={name}
-                  className="flex items-center gap-1.5 rounded-full border border-green-200 bg-green-50 px-3 py-1.5 text-sm text-green-700"
-                >
-                  <MapPin className="h-3.5 w-3.5" />
-                  <Icon className="h-3.5 w-3.5" />
-                  <span>{name}</span>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      )}
-
-      {/* DESCRIPTION */}
-      <section className="mt-6">
+      {/* Description */}
+      <section className="mt-8">
         <h2 className="text-base font-bold">Description</h2>
         <p className="mt-2 text-sm leading-relaxed text-gray-700">
           {listing.title}. Located at {listing.address}. Perfect for tenants
@@ -234,7 +181,66 @@ export default function ListingDetails() {
         </p>
       </section>
 
-      {/* AMENITIES */}
+      {/* Room specifications */}
+      {listing.roomSpecifications && (
+        <section className="mt-6">
+          <h2 className="text-base font-bold">Room specifications</h2>
+          <div className="border-border mt-3 grid grid-cols-3 gap-4 rounded-xl border p-4">
+            <div>
+              <p className="text-muted-foreground text-xs">Deposit</p>
+              <p className="mt-1 text-base font-bold">
+                {formatPeso(listing.deposit)}
+              </p>
+            </div>
+            <div>
+              <p className="text-muted-foreground text-xs">Advance</p>
+              <p className="mt-1 text-base font-bold">
+                {formatPeso(listing.advancePayment)}
+              </p>
+            </div>
+            <div>
+              <p className="text-muted-foreground text-xs">
+                {unitLabel} available
+              </p>
+              <p className="mt-1 flex items-center gap-1 text-base font-bold">
+                <BedDouble className="h-4 w-4 text-green-600" />
+                {listing.availableUnits}
+              </p>
+            </div>
+            <div>
+              <p className="text-muted-foreground text-xs">Capacity</p>
+              <p className="mt-1 flex items-center gap-1 text-base font-bold">
+                <Users className="h-4 w-4 text-green-600" />
+                {listing.roomSpecifications.capacity}{" "}
+                <span className="text-muted-foreground text-xs font-normal">
+                  {listing.roomSpecifications.capacity === 1
+                    ? "person"
+                    : "people"}
+                </span>
+              </p>
+            </div>
+            <div>
+              <p className="text-muted-foreground text-xs">Floor area</p>
+              <p className="mt-1 flex items-center gap-1 text-base font-bold">
+                <Ruler className="h-4 w-4 text-green-600" />
+                {listing.roomSpecifications.floorArea}
+                <span className="text-muted-foreground text-xs font-normal">
+                  m²
+                </span>
+              </p>
+            </div>
+            <div>
+              <p className="text-muted-foreground text-xs">Room size</p>
+              <p className="mt-1 flex items-center gap-1 text-base font-bold">
+                <Maximize2 className="h-4 w-4 text-green-600" />
+                {listing.roomSpecifications.roomSize}
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Amenities */}
       <section className="mt-6">
         <h2 className="text-base font-bold">Amenities</h2>
         <div className="mt-3 grid grid-cols-2 gap-y-2 sm:grid-cols-3">
@@ -247,8 +253,41 @@ export default function ListingDetails() {
         </div>
       </section>
 
-      {/* HOUSE RULES */}
-      <section className="mt-6">
+      {/* Room materials */}
+      {listing.roomMaterials && listing.roomMaterials.length > 0 && (
+        <section className="mt-6">
+          <h2 className="text-base font-bold">Room materials</h2>
+          <div className="mt-3 grid grid-cols-2 gap-y-2 sm:grid-cols-3">
+            {listing.roomMaterials.map((item) => (
+              <div key={item} className="flex items-center gap-2 text-sm">
+                <Check className="h-4 w-4 text-green-600" strokeWidth={3} />
+                <span className="text-gray-700">{item}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Inclusions */}
+      {listing.inclusions && listing.inclusions.length > 0 && (
+        <section className="mt-6">
+          <h2 className="text-base font-bold">Inclusions</h2>
+          <div className="mt-3 grid grid-cols-2 gap-y-2 sm:grid-cols-3">
+            {listing.inclusions.map((item) => (
+              <div key={item} className="flex items-center gap-2 text-sm">
+                <Check className="h-4 w-4 text-green-600" strokeWidth={3} />
+                <span className="text-gray-700">{item}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ==================== GROUP 2: RULES & EXTRAS ==================== */}
+      <GroupDivider />
+
+      {/* House rules */}
+      <section>
         <h2 className="text-base font-bold">House rules</h2>
         <ul className="mt-3 space-y-2">
           {listing.houseRules.map((rule) => (
@@ -260,10 +299,80 @@ export default function ListingDetails() {
         </ul>
       </section>
 
-      {/* LOCATION */}
-      <section className="mt-8">
+      {/* Good to know */}
+      {listing.others && listing.others.length > 0 && (
+        <section className="mt-6">
+          <h2 className="text-base font-bold">Good to know</h2>
+          <ul className="mt-3 space-y-2">
+            {listing.others.map((item) => (
+              <li key={item} className="flex items-start gap-2 text-sm">
+                <Check
+                  className="mt-0.5 h-4 w-4 shrink-0 text-green-600"
+                  strokeWidth={3}
+                />
+                <span className="text-gray-700">{item}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {/* Nearby landmarks */}
+      {listing.nearLandmarks.length > 0 && (
+        <section className="mt-6">
+          <h2 className="text-base font-bold">Nearby Landmarks</h2>
+          <p className="text-muted-foreground mt-1 text-xs">
+            Approximate distances from this location
+          </p>
+          <div className="mt-3 space-y-2">
+            {listing.nearLandmarks.map(({ name, distance }) => {
+              const Icon = getLandmarkIcon(name);
+              return (
+                <div key={name} className="border-border rounded-xl border p-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-50">
+                      <Icon className="h-4 w-4 text-green-700" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-gray-900">
+                        {name}
+                      </p>
+                      <p className="text-muted-foreground text-xs">
+                        {formatDistance(distance)}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Travel modes */}
+                  <div className="border-border text-muted-foreground mt-3 flex flex-wrap gap-3 border-t pt-3 text-xs">
+                    <span className="flex items-center gap-1">
+                      <PersonStanding className="h-3.5 w-3.5" />
+                      {walkingTime(distance)}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Bike className="h-3.5 w-3.5" />
+                      {motorcycleTime(distance)}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Car className="h-3.5 w-3.5" />
+                      {carTime(distance)}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* ==================== GROUP 3: WHERE ==================== */}
+      <GroupDivider />
+
+      <section>
         <h2 className="text-base font-bold">Location</h2>
-        <div className="border-border mt-3 aspect-[16/9] w-full overflow-hidden rounded-2xl border">
+        <p className="text-muted-foreground mt-1 text-sm">{listing.address}</p>
+
+        <div className="border-border mt-4 aspect-[16/9] w-full overflow-hidden rounded-2xl border">
           <MapContainer
             center={[listing.coordinates.lat, listing.coordinates.lng]}
             zoom={15}
@@ -300,151 +409,99 @@ export default function ListingDetails() {
         </div>
       </section>
 
-      {/* PRICE COMPARISON */}
-      {comparison && comparison.similar.length > 0 && (
-        <div className="border-border mt-8 rounded-xl border p-4">
-          <div className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5 text-green-600" />
-            <h2 className="text-base font-bold">Price comparison</h2>
-          </div>
+      <GroupDivider />
 
-          <div className="mt-3 flex items-start gap-2 rounded-xl bg-gray-50 p-3 text-sm">
-            {comparison.isBelow ? (
-              <TrendingDown className="mt-0.5 h-4 w-4 shrink-0 text-green-600" />
-            ) : (
-              <TrendingUp className="mt-0.5 h-4 w-4 shrink-0 text-orange-600" />
-            )}
-            <p className="text-gray-700">
-              This listing is{" "}
-              <span
-                className={`font-bold ${
-                  comparison.isBelow ? "text-green-700" : "text-orange-600"
-                }`}
-              >
-                {comparison.pct}% {comparison.isBelow ? "below" : "above"}{" "}
-                average
-              </span>{" "}
-              for {propertyTypeLabel}s in the area
-            </p>
-          </div>
+      <PriceComparison listing={listing} />
 
-          <div className="mt-4 space-y-2">
-            {comparison.similar.map(({ listing: l, diff }) => (
-              <div
-                key={l.id}
-                onClick={() => navigate(`/listing/${l.id}`)}
-                className="border-border flex cursor-pointer items-center gap-3 rounded-xl border p-2.5 transition-colors hover:bg-gray-50"
-              >
-                <div
-                  className="h-14 w-14 shrink-0 rounded-lg bg-gray-100 bg-cover bg-center"
-                  style={{ backgroundImage: `url(${l.photos[0]})` }}
-                />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold">{l.title}</p>
-                  <p className="text-muted-foreground truncate text-xs">
-                    {l.barangay} · {PROPERTY_TYPE_LABEL[l.propertyType]}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-bold">
-                    {formatPeso(l.pricePerMonth)}/mo
-                  </p>
-                  <p
-                    className={`text-xs font-semibold ${
-                      diff > 0 ? "text-orange-600" : "text-green-700"
-                    }`}
-                  >
-                    {diff > 0 ? "+" : ""}
-                    {formatPeso(diff)}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* LANDLORD */}
+      {/* ==================== GROUP 4: LANDLORD ==================== */}
       {landlord && (
-        <div className="border-border mt-8 rounded-xl border p-4">
-          <div className="flex items-center gap-3">
-            <div
-              className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${landlord.avatarColor} text-sm font-bold text-white`}
-            >
-              {landlord.initials}
-            </div>
-            <div className="flex-1">
-              <div className="flex items-center gap-1.5">
-                <p className="text-base font-bold">{landlord.name}</p>
-                {landlord.isVerified && (
-                  <BadgeCheck className="h-4 w-4 text-green-600" />
+        <>
+          <GroupDivider />
+          <section>
+            <h2 className="text-base font-bold">Meet your landlord</h2>
+            <div className="border-border mt-3 rounded-xl border p-4">
+              <div className="flex items-center gap-3">
+                <div
+                  className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${landlord.avatarColor} text-sm font-bold text-white`}
+                >
+                  {landlord.initials}
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-base font-bold">{landlord.name}</p>
+                    {landlord.isVerified && (
+                      <BadgeCheck className="h-4 w-4 text-green-600" />
+                    )}
+                  </div>
+                  <p className="text-muted-foreground text-xs">
+                    Joined{" "}
+                    {new Date(landlord.joinedAt).toLocaleDateString("en-PH", {
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </p>
+                </div>
+
+                {landlord.isVerified ? (
+                  <span className="shrink-0 rounded-full bg-green-50 px-2.5 py-1 text-[11px] font-semibold text-green-700">
+                    Verified
+                  </span>
+                ) : (
+                  <span className="shrink-0 rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-semibold text-gray-600">
+                    Unverified
+                  </span>
                 )}
               </div>
-              <p className="text-muted-foreground text-xs">
-                Joined{" "}
-                {new Date(landlord.joinedAt).toLocaleDateString("en-PH", {
-                  month: "short",
-                  year: "numeric",
-                })}
+
+              <Separator className="my-4" />
+
+              {!landlord.isVerified && (
+                <div className="mb-4 flex items-start gap-2 rounded-lg bg-gray-50 p-3 text-xs text-gray-600">
+                  <Info className="h-4 w-4 shrink-0 text-gray-500" />
+                  <p>This landlord hasn't opted in for verification.</p>
+                </div>
+              )}
+
+              <p className="text-muted-foreground text-xs font-semibold">
+                Contact directly
               </p>
+
+              <div className="mt-3 space-y-3">
+                <button
+                  onClick={() => {
+                    window.location.href =
+                      "tel:" + landlord.phone.replace(/\s/g, "");
+                  }}
+                  className="flex w-full items-center gap-3 text-left text-sm text-gray-700 hover:text-green-700"
+                >
+                  <Phone className="h-4 w-4 text-green-600" />
+                  {landlord.phone}
+                </button>
+                <button
+                  onClick={() => {
+                    window.location.href = "mailto:" + landlord.email;
+                  }}
+                  className="flex w-full items-center gap-3 text-left text-sm text-gray-700 hover:text-green-700"
+                >
+                  <Mail className="h-4 w-4 text-green-600" />
+                  {landlord.email}
+                </button>
+              </div>
+
+              <Button
+                variant="outline"
+                disabled={isFull}
+                className="mt-4 h-12 w-full gap-2 rounded-xl border-gray-200 text-base font-semibold hover:bg-gray-50 disabled:opacity-50"
+              >
+                <Calendar className="h-4 w-4" />
+                Book a visit
+              </Button>
             </div>
-
-            {landlord.isVerified ? (
-              <span className="shrink-0 rounded-full bg-green-50 px-2.5 py-1 text-[11px] font-semibold text-green-700">
-                Verified
-              </span>
-            ) : (
-              <span className="shrink-0 rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-semibold text-gray-600">
-                Unverified
-              </span>
-            )}
-          </div>
-
-          <Separator className="my-4" />
-
-          {!landlord.isVerified && (
-            <div className="mb-4 flex items-start gap-2 rounded-lg bg-gray-50 p-3 text-xs text-gray-600">
-              <Info className="h-4 w-4 shrink-0 text-gray-500" />
-              <p>This landlord hasn't opted in for verification.</p>
-            </div>
-          )}
-
-          <p className="text-muted-foreground text-xs font-semibold">
-            Contact directly
-          </p>
-
-          <div className="mt-3 space-y-3">
-            <button
-              onClick={() => {
-                window.location.href =
-                  "tel:" + landlord.phone.replace(/\s/g, "");
-              }}
-              className="flex w-full items-center gap-3 text-left text-sm text-gray-700 hover:text-green-700"
-            >
-              <Phone className="h-4 w-4 text-green-600" />
-              {landlord.phone}
-            </button>
-            <button
-              onClick={() => {
-                window.location.href = "mailto:" + landlord.email;
-              }}
-              className="flex w-full items-center gap-3 text-left text-sm text-gray-700 hover:text-green-700"
-            >
-              <Mail className="h-4 w-4 text-green-600" />
-              {landlord.email}
-            </button>
-          </div>
-
-          <Button
-            variant="outline"
-            disabled={isFull}
-            className="mt-4 h-12 w-full gap-2 rounded-xl border-gray-200 text-base font-semibold hover:bg-gray-50 disabled:opacity-50"
-          >
-            <Calendar className="h-4 w-4" />
-            Book a visit
-          </Button>
-        </div>
+          </section>
+        </>
       )}
+
+      {/* ==================== GROUP 5: COMPARE ==================== */}
 
       <div className="h-20" />
 
