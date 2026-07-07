@@ -5,10 +5,14 @@ import BottomNav from "@/components/layout/bottomNav";
 import ListingDetails from "@/pages/listingDetails";
 import NearMe from "@/pages/nearMe";
 import SearchPage from "@/pages/search";
+import LandlordDashboard from "@/pages/landlord/dashboard";
+
+
 
 function AppContent() {
   const location = useLocation();
   const hideBottomNav = location.pathname.startsWith("/listing/");
+  
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -23,8 +27,11 @@ function AppContent() {
         <Route path="/login" element={<div className="p-8">Log in (soon)</div>} />
         <Route path="/listing/:id" element={<ListingDetails />} />
         <Route path="/nearMe" element={<NearMe />} />
+
+
+        <Route path="/landlord/dashboard" element={<LandlordDashboard />} />
       </Routes>
-      {!hideBottomNav && <BottomNav />}
+      <BottomNav />
     </>
   );
 }
