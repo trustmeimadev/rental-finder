@@ -6,6 +6,7 @@ import ListingCard from "@/components/rentals/listingCard";
 import PageShell from "@/components/layout/pageShell";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MOCK_LISTINGS, type Listing } from "@/mocks/listings";
+import BrowseByType from "@/components/rentals/browseByType";
 
 const POPULAR_SEARCHES = [
   "Cannery Site",
@@ -87,6 +88,8 @@ export default function Home() {
         loading={loading}
         onSeeAll={() => navigate("/search?landmark=Notre%20Dame-Siena")}
       />
+
+      <BrowseByType />
     </PageShell>
   );
 }
@@ -98,7 +101,12 @@ type RowProps = {
   onSeeAll?: () => void;
 };
 
-function HorizontalListingRow({ title, listings, loading, onSeeAll }: RowProps) {
+function HorizontalListingRow({
+  title,
+  listings,
+  loading,
+  onSeeAll,
+}: RowProps) {
   if (!loading && listings.length === 0) return null;
 
   return (

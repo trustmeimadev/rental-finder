@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Home from "@/pages/home";
 import BottomNav from "@/components/layout/bottomNav";
@@ -8,6 +9,10 @@ import SearchPage from "@/pages/search";
 function AppContent() {
   const location = useLocation();
   const hideBottomNav = location.pathname.startsWith("/listing/");
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname, location.search]);
 
   return (
     <>
