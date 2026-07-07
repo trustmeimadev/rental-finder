@@ -11,7 +11,7 @@ import LandlordDashboard from "@/pages/landlord/dashboard";
 
 function AppContent() {
   const location = useLocation();
-  const hideBottomNav = location.pathname.startsWith("/listing/");
+  // const hideBottomNav = location.pathname.startsWith("/listing/");
   
 
   useEffect(() => {
