@@ -1,19 +1,20 @@
 import { Globe, ExternalLink, Search } from "lucide-react";
-
-/**
- * Dynamic "Also on the web" component.
- *
- * Instead of fake mock data, each result is a real deep-linked search URL
- * on a well-known platform (Booking.com, Agoda, OLX, Facebook Marketplace, etc.)
- * scoped to the user's exact query + "Polomolok".
- */
+import { useState } from "react";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+  PaginationEllipsis,
+} from "@/components/ui/pagination";
 
 type Platform = {
   name: string;
   source: string;
   description: (query: string) => string;
   url: (query: string) => string;
-  /** Tailwind text-color class for the title */
   color: string;
 };
 
@@ -46,8 +47,7 @@ const PLATFORMS: Platform[] = [
     name: "OLX Philippines",
     source: "olx.ph",
     description: (q) => `"${q}" rental listings on OLX`,
-    url: (q) =>
-      `https://www.olx.ph/items/q-${encodeURIComponent(q)}/`,
+    url: (q) => `https://www.olx.ph/items/q-${encodeURIComponent(q)}/`,
     color: "text-orange-600",
   },
   {
@@ -68,24 +68,61 @@ const PLATFORMS: Platform[] = [
   },
 ];
 
+const ITEMS_PER_PAGE = 3;
+
 type Props = {
   query: string;
 };
 
 export default function AlsoOnTheWeb({ query }: Props) {
+  const [currentPage, setCurrentPage] = useState(1);
+
   const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(
-    query + " apartments boarding houses Polomolok for rent"
+    query + " apartments boarding houses Polomolok for rent",
   )}`;
+
+  const totalPages = Math.ceil(PLATFORMS.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedPlatforms = PLATFORMS.slice(
+    startIndex,
+    startIndex + ITEMS_PER_PAGE,
+  );
+
+  const goToPage = (page: number) => {
+    if (page < 1 || page > totalPages) return;
+    setCurrentPage(page);
+  };
+
+  const getVisiblePages = () => {
+    const pages: (number | "ellipsis")[] = [];
+
+    if (totalPages <= 5) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+      return pages;
+    }
+
+    pages.push(1);
+
+    if (currentPage > 3) pages.push("ellipsis");
+
+    const start = Math.max(2, currentPage - 1);
+    const end = Math.min(totalPages - 1, currentPage + 1);
+
+    for (let i = start; i <= end; i++) pages.push(i);
+
+    if (currentPage < totalPages - 2) pages.push("ellipsis");
+
+    pages.push(totalPages);
+    return pages;
+  };
 
   return (
     <div className="mt-8">
-      {/* Section header */}
       <div className="mb-4 flex items-center gap-3">
         <Globe className="h-5 w-5 shrink-0 text-blue-600" />
         <h2 className="text-lg font-bold text-gray-900">Also on the web</h2>
       </div>
 
-      {/* Search Google CTA button */}
       <button
         onClick={() => window.open(googleUrl, "_blank", "noopener,noreferrer")}
         className="mb-4 flex w-full items-center gap-3 rounded-2xl border border-gray-200 bg-white px-5 py-4 shadow-sm transition-all hover:border-gray-300 hover:shadow-md active:scale-[0.98]"
@@ -95,25 +132,26 @@ export default function AlsoOnTheWeb({ query }: Props) {
         </div>
         <div className="text-left">
           <p className="text-sm font-semibold text-gray-800">Search Google</p>
-          <p className="mt-0.5 text-xs text-gray-400 truncate max-w-[220px]">
+          <p className="mt-0.5 truncate max-w-[220px] text-xs text-gray-400">
             {query} apartments · Polomolok
           </p>
         </div>
         <ExternalLink className="ml-auto h-4 w-4 shrink-0 text-gray-400" />
       </button>
 
-      {/* Dynamic platform results */}
       <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-        {PLATFORMS.map((platform, i) => (
+        {paginatedPlatforms.map((platform, i) => (
           <button
             key={i}
             onClick={() =>
               window.open(platform.url(query), "_blank", "noopener,noreferrer")
             }
-            className="flex w-full items-center justify-between border-b border-gray-100 px-5 py-4 text-left last:border-b-0 transition-colors hover:bg-gray-50 active:scale-[0.99]"
+            className="flex w-full items-center justify-between border-b border-gray-100 px-5 py-4 text-left transition-colors last:border-b-0 hover:bg-gray-50 active:scale-[0.99]"
           >
             <div className="min-w-0 flex-1">
-              <p className={`truncate text-sm font-semibold ${platform.color}`}>
+              <p
+                className={`truncate text-sm font-semibold ${platform.color}`}
+              >
                 {platform.name}
               </p>
               <p className="mt-0.5 text-xs text-gray-500">
@@ -124,6 +162,63 @@ export default function AlsoOnTheWeb({ query }: Props) {
           </button>
         ))}
       </div>
+
+      {totalPages > 1 && (
+        <div className="mt-4">
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={(e) => {
+                    e.preventDefault();
+                    goToPage(currentPage - 1);
+                  }}
+                  className={
+                    currentPage === 1
+                      ? "pointer-events-none opacity-50"
+                      : "cursor-pointer"
+                  }
+                />
+              </PaginationItem>
+
+              {getVisiblePages().map((page, i) =>
+                page === "ellipsis" ? (
+                  <PaginationItem key={`ellipsis-${i}`}>
+                    <PaginationEllipsis />
+                  </PaginationItem>
+                ) : (
+                  <PaginationItem key={page}>
+                    <PaginationLink
+                      onClick={(e) => {
+                        e.preventDefault();
+                        goToPage(page);
+                      }}
+                      isActive={currentPage === page}
+                      className="cursor-pointer"
+                    >
+                      {page}
+                    </PaginationLink>
+                  </PaginationItem>
+                ),
+              )}
+
+              <PaginationItem>
+                <PaginationNext
+                  onClick={(e) => {
+                    e.preventDefault();
+                    goToPage(currentPage + 1);
+                  }}
+                  className={
+                    currentPage === totalPages
+                      ? "pointer-events-none opacity-50"
+                      : "cursor-pointer"
+                  }
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
     </div>
   );
 }

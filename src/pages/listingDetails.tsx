@@ -3,7 +3,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   BadgeCheck,
-  //   MapPin,
   Info,
   BedDouble,
   Phone,
@@ -13,9 +12,6 @@ import {
   ShieldCheck,
   Navigation,
   ExternalLink,
-  //   BarChart3,
-  //   TrendingDown,
-  //   TrendingUp,
   PersonStanding,
   Bike,
   Car,
@@ -44,6 +40,7 @@ import {
   carTime,
 } from "@/lib/formatDistance";
 import PriceComparison from "@/components/rentals/priceComparison";
+import ReviewsSection from "@/components/rentals/reviewsSections";
 
 const PROPERTY_TYPE_LABEL: Record<Listing["propertyType"], string> = {
   boarding_house: "Boarding house",
@@ -66,7 +63,6 @@ const AVAILABILITY_STYLES: Record<Listing["availability"], string> = {
   occupied: "bg-gray-200 text-gray-700",
 };
 
-// Reusable divider between major groups
 function GroupDivider() {
   return <div className="border-border mt-10 border-t pt-8" />;
 }
@@ -125,7 +121,6 @@ export default function ListingDetails() {
 
   return (
     <PageShell>
-      {/* Top bar */}
       <div className="sticky top-0 z-20 -mx-4 flex items-center justify-between bg-white/95 px-4 py-3 backdrop-blur">
         <button
           onClick={() => navigate(-1)}
@@ -135,7 +130,6 @@ export default function ListingDetails() {
         </button>
       </div>
 
-      {/* Photo gallery */}
       <div className="-mx-4 -mt-14">
         <PhotoGallery
           photos={listing.photos}
@@ -144,13 +138,11 @@ export default function ListingDetails() {
         />
       </div>
 
-      {/* HEADER */}
       <section className="mt-6">
         <Badge
           variant="outline"
-          className={`rounded-full border-0 px-3 py-1 text-xs font-semibold capitalize ${
-            AVAILABILITY_STYLES[listing.availability]
-          }`}
+          className={`rounded-full border-0 px-3 py-1 text-xs font-semibold capitalize ${AVAILABILITY_STYLES[listing.availability]
+            }`}
         >
           {listing.availability}
         </Badge>
@@ -169,19 +161,16 @@ export default function ListingDetails() {
         </p>
       </section>
 
-      {/* ==================== GROUP 1: ABOUT THE ROOM ==================== */}
-
-      {/* Description */}
       <section className="mt-8">
         <h2 className="text-base font-bold">Description</h2>
         <p className="mt-2 text-sm leading-relaxed text-gray-700">
           {listing.title}. Located at {listing.address}. Perfect for tenants
-          looking for a place near {listing.nearLandmarks.join(", ")}. Message
-          the landlord for viewing schedule.
+          looking for a place near{" "}
+          {listing.nearLandmarks.map((lm) => lm.name).join(", ")}. Message the
+          landlord for viewing schedule.
         </p>
       </section>
 
-      {/* Room specifications */}
       {listing.roomSpecifications && (
         <section className="mt-6">
           <h2 className="text-base font-bold">Room specifications</h2>
@@ -240,7 +229,6 @@ export default function ListingDetails() {
         </section>
       )}
 
-      {/* Amenities */}
       <section className="mt-6">
         <h2 className="text-base font-bold">Amenities</h2>
         <div className="mt-3 grid grid-cols-2 gap-y-2 sm:grid-cols-3">
@@ -253,7 +241,6 @@ export default function ListingDetails() {
         </div>
       </section>
 
-      {/* Room materials */}
       {listing.roomMaterials && listing.roomMaterials.length > 0 && (
         <section className="mt-6">
           <h2 className="text-base font-bold">Room materials</h2>
@@ -268,7 +255,6 @@ export default function ListingDetails() {
         </section>
       )}
 
-      {/* Inclusions */}
       {listing.inclusions && listing.inclusions.length > 0 && (
         <section className="mt-6">
           <h2 className="text-base font-bold">Inclusions</h2>
@@ -283,10 +269,8 @@ export default function ListingDetails() {
         </section>
       )}
 
-      {/* ==================== GROUP 2: RULES & EXTRAS ==================== */}
       <GroupDivider />
 
-      {/* House rules */}
       <section>
         <h2 className="text-base font-bold">House rules</h2>
         <ul className="mt-3 space-y-2">
@@ -299,7 +283,6 @@ export default function ListingDetails() {
         </ul>
       </section>
 
-      {/* Good to know */}
       {listing.others && listing.others.length > 0 && (
         <section className="mt-6">
           <h2 className="text-base font-bold">Good to know</h2>
@@ -317,7 +300,6 @@ export default function ListingDetails() {
         </section>
       )}
 
-      {/* Nearby landmarks */}
       {listing.nearLandmarks.length > 0 && (
         <section className="mt-6">
           <h2 className="text-base font-bold">Nearby Landmarks</h2>
@@ -328,7 +310,10 @@ export default function ListingDetails() {
             {listing.nearLandmarks.map(({ name, distance }) => {
               const Icon = getLandmarkIcon(name);
               return (
-                <div key={name} className="border-border rounded-xl border p-3">
+                <div
+                  key={name}
+                  className="border-border rounded-xl border p-3"
+                >
                   <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-50">
                       <Icon className="h-4 w-4 text-green-700" />
@@ -343,7 +328,6 @@ export default function ListingDetails() {
                     </div>
                   </div>
 
-                  {/* Travel modes */}
                   <div className="border-border text-muted-foreground mt-3 flex flex-wrap gap-3 border-t pt-3 text-xs">
                     <span className="flex items-center gap-1">
                       <PersonStanding className="h-3.5 w-3.5" />
@@ -365,7 +349,6 @@ export default function ListingDetails() {
         </section>
       )}
 
-      {/* ==================== GROUP 3: WHERE ==================== */}
       <GroupDivider />
 
       <section>
@@ -411,9 +394,12 @@ export default function ListingDetails() {
 
       <GroupDivider />
 
+      <ReviewsSection listingId={listing.id} />
+
+      <GroupDivider />
+
       <PriceComparison listing={listing} />
 
-      {/* ==================== GROUP 4: LANDLORD ==================== */}
       {landlord && (
         <>
           <GroupDivider />
@@ -500,8 +486,6 @@ export default function ListingDetails() {
           </section>
         </>
       )}
-
-      {/* ==================== GROUP 5: COMPARE ==================== */}
 
       <div className="h-20" />
 

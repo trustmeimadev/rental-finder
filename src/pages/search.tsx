@@ -1,6 +1,6 @@
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useMemo } from "react";
-import { Search, ArrowLeft } from "lucide-react";
+import { Search } from "lucide-react";
 import { MOCK_LISTINGS, type Listing } from "@/mocks/listings";
 import ListingCard from "@/components/rentals/listingCard";
 import SearchPill from "@/components/rentals/searchPill";
@@ -104,7 +104,6 @@ export default function SearchPage() {
     });
   }, [q, landmark]);
 
-  // Group by property type
   const grouped: GroupedListings = {};
   for (const listing of results) {
     if (!grouped[listing.propertyType]) grouped[listing.propertyType] = [];
@@ -115,23 +114,10 @@ export default function SearchPage() {
 
   return (
     <PageShell>
-      {/* Sticky top bar */}
       <div className="bg-background sticky top-0 z-10 pt-4 pb-3">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => navigate(-1)}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-gray-200 bg-white transition-colors hover:bg-gray-100 active:scale-95"
-            aria-label="Go back"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </button>
-          <div className="flex-1">
-            <SearchPill hideNearMe />
-          </div>
-        </div>
+        <SearchPill />
       </div>
 
-      {/* Results heading */}
       <div className="mt-4">
         {isFiltered ? (
           <h1 className="text-base font-bold text-gray-900">
@@ -159,7 +145,6 @@ export default function SearchPage() {
         )}
       </div>
 
-      {/* Grouped results */}
       {hasResults ? (
         PROPERTY_TYPE_ORDER.map((type) =>
           grouped[type] && grouped[type]!.length > 0 ? (
@@ -171,7 +156,6 @@ export default function SearchPage() {
           ) : null
         )
       ) : isFiltered ? (
-        // No results empty state
         <div className="mt-8 flex flex-col items-center text-center">
           <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
             <Search className="h-7 w-7 text-gray-400" />
@@ -194,7 +178,6 @@ export default function SearchPage() {
         <SkeletonRows />
       )}
 
-      {/* Also on the web — always shown when a query is active */}
       {isFiltered && displayQuery && (
         <AlsoOnTheWeb query={displayQuery} />
       )}
