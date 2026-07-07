@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { Search, Heart, User } from "lucide-react";
+import { Home, Search, Heart, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const tabs = [
-  { to: "/", icon: Search, label: "Explore" },
-  { to: "/favorites", icon: Heart, label: "Wishlists" },
-  { to: "/login", icon: User, label: "Log in" },
+  { to: "/", icon: Home, label: "Home", matchExact: true },
+  { to: "/search", icon: Search, label: "Explore", matchPaths: ["/search", "/nearMe"] },
+  { to: "/favorites", icon: Heart, label: "Wishlist" },
+  { to: "/login", icon: User, label: "Profile" },
 ];
 
 export default function BottomNav() {
@@ -17,56 +18,52 @@ export default function BottomNav() {
   useEffect(() => {
     const handleScroll = () => {
       const currentY = window.scrollY;
-
-      if (currentY < 10) {
-        setVisible(true);
-      } else if (currentY > lastScrollY) {
-        setVisible(false);
-      } else if (currentY < lastScrollY) {
-        setVisible(true);
-      }
-
+      if (currentY < 10) setVisible(true);
+      else if (currentY > lastScrollY) setVisible(false);
+      else if (currentY < lastScrollY) setVisible(true);
       setLastScrollY(currentY);
     };
-
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
 
+  const isActive = (tab: (typeof tabs)[0]) => {
+    if (tab.matchExact) return location.pathname === tab.to;
+    if (tab.matchPaths) return tab.matchPaths.includes(location.pathname);
+    return location.pathname.startsWith(tab.to);
+  };
+
   return (
     <nav
       className={cn(
-        "fixed bottom-0 left-0 right-0 z-30 border-t border-border bg-white transition-transform duration-300 md:hidden",
-        visible ? "translate-y-0" : "translate-y-full"
+        "fixed bottom-0 left-0 right-0 z-40 border-t border-gray-200 bg-white transition-transform duration-300",
+        visible ? "translate-y-0" : "translate-y-full",
       )}
     >
-      <div className="mx-auto flex max-w-screen-md items-center justify-around px-2 py-2">
-        {tabs.map(({ to, icon: Icon, label }) => {
-          const isActive =
-            to === "/" ? location.pathname === "/" : location.pathname.startsWith(to);
+      <div className="mx-auto flex max-w-md items-center justify-around gap-1 px-3 py-3">
+        {tabs.map((tab) => {
+          const active = isActive(tab);
+          const Icon = tab.icon;
 
           return (
             <NavLink
-              key={to}
-              to={to}
-              className="flex flex-1 flex-col items-center gap-1 py-1"
+              key={tab.to}
+              to={tab.to}
+              className={cn(
+                "flex items-center justify-center gap-2 rounded-full transition-all active:scale-95",
+                active
+                  ? "flex-1 bg-green-100 px-4 py-2.5 text-green-700"
+                  : "px-3 py-2.5 text-gray-500",
+              )}
             >
               <Icon
-                className={cn(
-                  "h-6 w-6 transition-colors",
-                  isActive ? "text-green-600" : "text-gray-500"
-                )}
-                strokeWidth={isActive ? 2.5 : 2}
-                fill={isActive && label === "Wishlists" ? "currentColor" : "none"}
+                className="h-5 w-5"
+                strokeWidth={active ? 2.5 : 2}
+                fill={active && tab.label === "Wishlist" ? "currentColor" : "none"}
               />
-              <span
-                className={cn(
-                  "text-[11px] font-semibold transition-colors",
-                  isActive ? "text-green-600" : "text-gray-500"
-                )}
-              >
-                {label}
-              </span>
+              {active && (
+                <span className="text-xs font-semibold">{tab.label}</span>
+              )}
             </NavLink>
           );
         })}
@@ -74,4 +71,3 @@ export default function BottomNav() {
     </nav>
   );
 }
-``
