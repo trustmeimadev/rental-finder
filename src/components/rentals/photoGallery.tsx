@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { Grid3x3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { PhotoSection } from "@/mocks/listings";
+import PhotoTourSheet from "./photoTourSheet";
 
 type Props = {
   photos: string[];
@@ -10,16 +11,16 @@ type Props = {
   photoSections?: PhotoSection[];
 };
 
-export default function PhotoGallery({ photos, title }: Props) {
+export default function PhotoGallery({ photos, title, photoSections }: Props) {
   const [activePhoto, setActivePhoto] = useState(0);
-  const navigate = useNavigate();
+  const [isTourOpen, setIsTourOpen] = useState(false);
   const { id } = useParams();
   const hasEnoughPhotos = photos.length >= 5;
   const mainPhoto = photos[0];
   const sidePhotos = photos.slice(1, 5);
 
   const openTour = () => {
-    if (id) navigate(`/listing/${id}/photos`);
+    if (id) setIsTourOpen(true);
   };
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
@@ -88,6 +89,14 @@ export default function PhotoGallery({ photos, title }: Props) {
           )}
         </div>
       </div>
+
+      <PhotoTourSheet
+        isOpen={isTourOpen}
+        onOpenChange={setIsTourOpen}
+        photos={photos}
+        title={title}
+        photoSections={photoSections}
+      />
     </>
   );
 }
