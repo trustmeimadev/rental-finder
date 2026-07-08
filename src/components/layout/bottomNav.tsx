@@ -1,19 +1,47 @@
 import { useEffect, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { Home, Search, Heart, User } from "lucide-react";
+import {
+  Home,
+  Search,
+  Heart,
+  User,
+  LayoutDashboard,
+  Building2,
+  MessageCircle,
+  Users,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { LucideIcon } from "lucide-react";
 
-const tabs = [
+type Tab = {
+  to: string;
+  icon: LucideIcon;
+  label: string;
+  matchExact?: boolean;
+  matchPaths?: string[];
+};
+
+const TENANT_TABS: Tab[] = [
   { to: "/", icon: Home, label: "Home", matchExact: true },
   { to: "/search", icon: Search, label: "Explore", matchPaths: ["/search", "/nearMe"] },
   { to: "/favorites", icon: Heart, label: "Wishlist" },
-  { to: "/login", icon: User, label: "Profile" },
+  { to: "/login", icon: User, label: "Login" },
+];
+
+const LANDLORD_TABS: Tab[] = [
+  { to: "/landlord", icon: LayoutDashboard, label: "Dashboard", matchExact: true },
+  { to: "/landlord/listings", icon: Building2, label: "Listings" },
+  { to: "/landlord/inquiries", icon: MessageCircle, label: "Inbox" },
+  { to: "/landlord/tenants", icon: Users, label: "Tenants" },
 ];
 
 export default function BottomNav() {
   const [visible, setVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const location = useLocation();
+
+  const isLandlordRoute = location.pathname.startsWith("/landlord");
+  const tabs = isLandlordRoute ? LANDLORD_TABS : TENANT_TABS;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -27,7 +55,7 @@ export default function BottomNav() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
 
-  const isActive = (tab: (typeof tabs)[0]) => {
+  const isActive = (tab: Tab) => {
     if (tab.matchExact) return location.pathname === tab.to;
     if (tab.matchPaths) return tab.matchPaths.includes(location.pathname);
     return location.pathname.startsWith(tab.to);
@@ -59,7 +87,9 @@ export default function BottomNav() {
               <Icon
                 className="h-5 w-5"
                 strokeWidth={active ? 2.5 : 2}
-                fill={active && tab.label === "Wishlist" ? "currentColor" : "none"}
+                fill={
+                  active && tab.label === "Wishlist" ? "currentColor" : "none"
+                }
               />
               {active && (
                 <span className="text-xs font-semibold">{tab.label}</span>

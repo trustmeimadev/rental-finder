@@ -6,7 +6,8 @@ import ListingDetails from "@/pages/listingDetails";
 import NearMe from "@/pages/nearMe";
 import SearchPage from "@/pages/search";
 import LandlordDashboard from "@/pages/landlord/dashboard";
-
+import Login from "@/pages/login";
+import Wishlist from "@/pages/wishlist";
 
 
 function AppContent() {
@@ -23,8 +24,8 @@ function AppContent() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/search" element={<SearchPage />} />
-        <Route path="/favorites" element={<div className="p-8">Wishlists (soon)</div>} />
-        <Route path="/login" element={<div className="p-8">Log in (soon)</div>} />
+        <Route path="/favorites" element={<Wishlist />} />
+        <Route path="/login" element={<Login/>} />
         <Route path="/listing/:id" element={<ListingDetails />} />
         <Route path="/nearMe" element={<NearMe />} />
 
